@@ -1,0 +1,106 @@
+;; gorilla-repl.fileformat = 1
+
+;; **
+;;; # Movie stats
+;;; 
+;;; Jeah
+;; **
+
+;; @@
+(ns movie-stats
+  (:require [clojure.data.csv :as csv]
+            [clojure.java.io :as io]
+            [kixi.stats.core :as k]
+            [clojure.string :as s]
+            [gorilla-plot.core :as plot]))
+
+(defn csv-data->maps [csv-data]
+  (map zipmap
+       (->> (first csv-data) ;; First row is the header
+            (map (comp keyword
+                    #(s/replace % #" " "_")
+                    #(s/replace % #"[()]" "")))
+            repeat)
+       (rest csv-data)))
+
+(defn- val-to-number [m mkey]
+  (if (pos? (count (mkey m)))
+    (update m mkey #(read-string %))
+    (assoc m mkey nil)))
+
+(defn add-watch-year [record]
+  (let [year (-> record :Created (subs 0 4) read-string)]
+    (assoc record :Watch_Year year)))
+
+(defn load-data []
+  (with-open [reader (io/reader "./data/WATCHLIST.csv")]
+    (doall
+     (->> (csv/read-csv reader)
+          csv-data->maps
+          (map (fn [record]
+                 (-> record
+                     (val-to-number :Year)
+                     (val-to-number :Your_Rating)
+                     (val-to-number :Num_Votes)
+                     (val-to-number :Position)
+                     (val-to-number :IMDb_Rating)
+                     (val-to-number :Runtime_mins))))
+          (map add-watch-year)))))
+
+(first (load-data))
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-map'>{</span>","close":"<span class='clj-map'>}</span>","separator":", ","items":[{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Title_Type</span>","value":":Title_Type"},{"type":"html","content":"<span class='clj-string'>&quot;movie&quot;</span>","value":"\"movie\""}],"value":"[:Title_Type \"movie\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Date_Rated</span>","value":":Date_Rated"},{"type":"html","content":"<span class='clj-string'>&quot;2012-12-28&quot;</span>","value":"\"2012-12-28\""}],"value":"[:Date_Rated \"2012-12-28\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Release_Date</span>","value":":Release_Date"},{"type":"html","content":"<span class='clj-string'>&quot;1979-08-07&quot;</span>","value":"\"1979-08-07\""}],"value":"[:Release_Date \"1979-08-07\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:IMDb_Rating</span>","value":":IMDb_Rating"},{"type":"html","content":"<span class='clj-double'>5.7</span>","value":"5.7"}],"value":"[:IMDb_Rating 5.7]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Title</span>","value":":Title"},{"type":"html","content":"<span class='clj-string'>&quot;Immagini di un convento&quot;</span>","value":"\"Immagini di un convento\""}],"value":"[:Title \"Immagini di un convento\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Genres</span>","value":":Genres"},{"type":"html","content":"<span class='clj-string'>&quot;Adult, Drama&quot;</span>","value":"\"Adult, Drama\""}],"value":"[:Genres \"Adult, Drama\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Num_Votes</span>","value":":Num_Votes"},{"type":"html","content":"<span class='clj-long'>614</span>","value":"614"}],"value":"[:Num_Votes 614]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Watch_Year</span>","value":":Watch_Year"},{"type":"html","content":"<span class='clj-long'>2012</span>","value":"2012"}],"value":"[:Watch_Year 2012]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Your_Rating</span>","value":":Your_Rating"},{"type":"html","content":"<span class='clj-long'>8</span>","value":"8"}],"value":"[:Your_Rating 8]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Directors</span>","value":":Directors"},{"type":"html","content":"<span class='clj-string'>&quot;Joe D&#x27;Amato&quot;</span>","value":"\"Joe D'Amato\""}],"value":"[:Directors \"Joe D'Amato\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Modified</span>","value":":Modified"},{"type":"html","content":"<span class='clj-string'>&quot;2014-01-18&quot;</span>","value":"\"2014-01-18\""}],"value":"[:Modified \"2014-01-18\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Const</span>","value":":Const"},{"type":"html","content":"<span class='clj-string'>&quot;tt0165325&quot;</span>","value":"\"tt0165325\""}],"value":"[:Const \"tt0165325\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Runtime_mins</span>","value":":Runtime_mins"},{"type":"html","content":"<span class='clj-long'>82</span>","value":"82"}],"value":"[:Runtime_mins 82]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Description</span>","value":":Description"},{"type":"html","content":"<span class='clj-string'>&quot;&quot;</span>","value":"\"\""}],"value":"[:Description \"\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Year</span>","value":":Year"},{"type":"html","content":"<span class='clj-long'>1979</span>","value":"1979"}],"value":"[:Year 1979]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:URL</span>","value":":URL"},{"type":"html","content":"<span class='clj-string'>&quot;https://www.imdb.com/title/tt0165325/&quot;</span>","value":"\"https://www.imdb.com/title/tt0165325/\""}],"value":"[:URL \"https://www.imdb.com/title/tt0165325/\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Created</span>","value":":Created"},{"type":"html","content":"<span class='clj-string'>&quot;2012-12-28&quot;</span>","value":"\"2012-12-28\""}],"value":"[:Created \"2012-12-28\"]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:Position</span>","value":":Position"},{"type":"html","content":"<span class='clj-long'>1</span>","value":"1"}],"value":"[:Position 1]"}],"value":"{:Title_Type \"movie\", :Date_Rated \"2012-12-28\", :Release_Date \"1979-08-07\", :IMDb_Rating 5.7, :Title \"Immagini di un convento\", :Genres \"Adult, Drama\", :Num_Votes 614, :Watch_Year 2012, :Your_Rating 8, :Directors \"Joe D'Amato\", :Modified \"2014-01-18\", :Const \"tt0165325\", :Runtime_mins 82, :Description \"\", :Year 1979, :URL \"https://www.imdb.com/title/tt0165325/\", :Created \"2012-12-28\", :Position 1}"}
+;; <=
+
+;; **
+;;; Let's get all the movies watched in 2017.
+;; **
+
+;; @@
+(defn from-year? [year movie]
+  (let [filmyear (:Watch_Year movie)]
+    (if (= 2017 filmyear)
+      (not= "At Berkeley" (:Title movie)) ; "At Berkeley" is accidentally listed in 2017, though watched years earlier
+      (= year filmyear))))
+      
+
+(count (filter (partial from-year? 2017) (load-data)))
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-unkown'>122</span>","value":"122"}
+;; <=
+
+;; **
+;;; Let's then calculate the total running time for movies watched in 2017.
+;; **
+
+;; @@
+(defn running-times [year data]
+  (transduce (comp
+               (filter (partial from-year? year))
+               (map :Runtime_mins))
+             + data))
+
+(defn time-report [mins]
+  (let [hours (/ mins 60.0)
+        days (/ hours 24)]
+    {:mins mins :hours hours :days days}))
+
+(->> (load-data)
+     (running-times 2017)
+     time-report)
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-map'>{</span>","close":"<span class='clj-map'>}</span>","separator":", ","items":[{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:mins</span>","value":":mins"},{"type":"html","content":"<span class='clj-long'>12429</span>","value":"12429"}],"value":"[:mins 12429]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:hours</span>","value":":hours"},{"type":"html","content":"<span class='clj-double'>207.15</span>","value":"207.15"}],"value":"[:hours 207.15]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:days</span>","value":":days"},{"type":"html","content":"<span class='clj-double'>8.63125</span>","value":"8.63125"}],"value":"[:days 8.63125]"}],"value":"{:mins 12429, :hours 207.15, :days 8.63125}"}
+;; <=
+
+;; @@
+(->> (load-data)
+     (running-times 2016)
+     time-report)
+;; @@
+
+;; @@
+
+;; @@

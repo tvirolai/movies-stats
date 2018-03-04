@@ -14,13 +14,10 @@
             repeat)
        (rest csv-data)))
 
-(defn update-vals [map vals f]
-  (reduce #(update-in % [%2] f) map vals))
-
-(defn val-to-int [m key]
-  (if (pos? (count (key m)))
-    (update m key #(read-string %))
-    (assoc m key nil)))
+(defn- val-to-number [m mkey]
+  (if (pos? (count (mkey m)))
+    (update m mkey #(read-string %))
+    (assoc m mkey nil)))
 
 (defn add-watch-year [record]
   (let [year (-> record :Created (subs 0 4) read-string)]
@@ -33,12 +30,12 @@
           csv-data->maps
           (map (fn [record]
                  (-> record
-                     (val-to-int :Year)
-                     (val-to-int :Your_Rating)
-                     (val-to-int :Num_Votes)
-                     (val-to-int :Position)
-                     (val-to-int :IMDb_Rating)
-                     (val-to-int :Runtime_mins))))
+                     (val-to-number :Year)
+                     (val-to-number :Your_Rating)
+                     (val-to-number :Num_Votes)
+                     (val-to-number :Position)
+                     (val-to-number :IMDb_Rating)
+                     (val-to-number :Runtime_mins))))
           (map add-watch-year)))))
 
 (defn time-report [mins]
@@ -51,12 +48,6 @@
     (comp (filter #(= year (:Watch_Year %)))
           (map :Runtime_mins)
           (filter number?)) + data))
-
-(defn total-lengths-in-year* [data year]
-  (->> data
-       (filter #(= year (:Watch_Year %)))
-       (map :Runtime_mins)
-       (reduce +)))
 
 (defn -main
   "I don't do a whole lot ... yet."
